@@ -13,6 +13,7 @@ def import_folder(path):
             surface_list.append(image_surf)
 
     return surface_list
+#function imports folder by using for loop and looping through every file in folder
 
 def import_csv_layout(path):
     terrain_map = []
@@ -21,6 +22,7 @@ def import_csv_layout(path):
         for row in level:
             terrain_map.append(list(row))
         return terrain_map
+    #imports csv layout of the csv tiled files to see how the level is layed out
 
 def import_cut_graphics(path):
     surface = pygame.image.load(path).convert_alpha()

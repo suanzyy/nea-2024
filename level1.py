@@ -5,55 +5,58 @@ from player import Player
 from particles import ParticleEffect
 
 class Level:
-    def __init__(self,level_data,surface):
-
-        #lvl setup
+    def __init__(self, level_data, surface):
+        # Level setup
         self.display_surface = surface
         self.setup_level(level_data)
         self.world_shift = 0
         self.current_x = 0
 
+        # Sprite group for dust particles
         self.dust_sprite = pygame.sprite.GroupSingle()
 
-    def create_jump_particles(self,pos):
-
-        jump_particle_sprite = ParticleEffect(pos,'jump')
+    def create_jump_particles(self, pos):
+        # Create jump dust particles
+        jump_particle_sprite = ParticleEffect(pos, 'jump')
         self.dust_sprite.add(jump_particle_sprite)
 
     def get_player_on_ground(self):
+        # Check if the player is on the ground
         if self.player.sprite.on_ground:
             self.player_on_ground = True
         else:
             self.player_on_ground = False
 
     def create_landing_dust(self):
+        # Create landing dust particles when the player lands
         if not self.player_on_ground and self.player.sprite.on_ground and not self.dust_sprite:
             if self.player.sprite.facing_right:
-                offset = pygame.math.Vector2(10,15)
+                offset = pygame.math.Vector2(10, 15)
             else:
                 offset = pygame.math.Vector2(-10, 15)
 
-            fall_dust_particle = ParticleEffect(self.player.sprite.rect.midbottom - offset,'land')
+            fall_dust_particle = ParticleEffect(self.player.sprite.rect.midbottom - offset, 'land')
             self.dust_sprite.add(fall_dust_particle)
 
-
     def setup_level(self, layout):
+        # Set up the level's tiles and player
         self.tiles = pygame.sprite.Group()
         self.player = pygame.sprite.GroupSingle()
 
-        for row_index,row in enumerate(layout):
+        for row_index, row in enumerate(layout):
             for col_index, col in enumerate(row):
                 x = col_index * tile_size
                 y = row_index * tile_size
 
-                if col == 'X' :
-                    tile = Tile((x,y),tile_size)
+                if col == 'X':
+                    tile = Tile((x, y), tile_size)
                     self.tiles.add(tile)
                 if col == 'P':
-                    player_sprite = Player((x, y),self.display_surface,self.create_jump_particles)
+                    player_sprite = Player((x, y), self.display_surface, self.create_jump_particles)
                     self.player.add(player_sprite)
 
     def scroll_x(self):
+        # Scroll the level horizontally based on player position
         player = self.player.sprite
         player_x = player.rect.centerx
         direction_x = player.direction.x
@@ -69,6 +72,7 @@ class Level:
             player.speed = 8
 
     def horizontal_movement_collision(self):
+        # Handle horizontal movement collision with tiles
         player = self.player.sprite
         player.rect.x += player.direction.x * player.speed
         for sprite in self.tiles.sprites():
@@ -87,8 +91,8 @@ class Level:
         if player.on_right and (player.rect.right > self.current_x or player.direction.x <= 0):
             player.on_right = False
 
-
     def vertical_movement_collision(self):
+        # Handle vertical movement collision with tiles
         player = self.player.sprite
         player.apply_gravity()
         for sprite in self.tiles.sprites():
@@ -102,22 +106,23 @@ class Level:
                     player.direction.y = 0
                     player.on_ceiling = True
 
-        if player.on_ground and player.direction.y <0 or player.direction.y >1:
+        if player.on_ground and player.direction.y < 0 or player.direction.y > 1:
             player.on_ground = False
-        if player.on_ceiling and player.direction.y >0:
+        if player.on_ceiling and player.direction.y > 0:
             player.on_ceiling = False
 
     def run(self):
-        #level tiles
+        # Run the level
+        # Update and draw level tiles
         self.tiles.update(self.world_shift)
         self.tiles.draw(self.display_surface)
         self.scroll_x()
 
-        #dust_particles
+        # Update and draw dust particles
         self.dust_sprite.update(self.world_shift)
         self.dust_sprite.draw(self.display_surface)
 
-        #player
+        # Update and draw player
         self.player.update()
         self.horizontal_movement_collision()
         self.get_player_on_ground()
